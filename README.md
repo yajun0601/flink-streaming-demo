@@ -1,4 +1,5 @@
 ## Demo Applications for Apache Flink&trade; DataStream
+## Flink DataStream 示例
 
 This repository contains demo applications for [Apache Flink](https://flink.apache.org)'s
 [DataStream API](https://ci.apache.org/projects/flink/flink-docs-release-0.10/apis/streaming_guide.html).
@@ -21,22 +22,28 @@ To run a demo application in your IDE follows these steps:
 1. **Clone the repository:** Open a terminal and clone the repository:
 `git clone https://github.com/dataArtisans/flink-streaming-demo.git`. Please note that the
 repository is about 100MB in size because it includes the input data of our demo applications.
+这个 repository 的大小差不多 100MB，因为它包含了输入数据。
 
 2. **Import the project into your IDE:** The repository is a Maven project. Open your IDE and
 import the repository as an existing Maven project. This is usually done by selecting the folder that
 contains the `pom.xml` file or selecting the `pom.xml` file itself.
+这是一个 Maven project。 打开IDEA，import 按照一个 Maven project导入。
 
 3. **Start a demo application:** Execute the `main()` method of one of the demo applications, for example
 `com.dataartisans.flink_demo.examples.TotalArrivalCount.scala`.
 Running an application will start a local Flink instance in the JVM process of your IDE.
 You will see Flink's log messages and the output produced by the program being printed to the standard output.
+** 启动一个示例应用：** 运行其中一个 demo 的 `main()` 方法，比如 `com.dataartisans.flink_demo.examples.TotalArrivalCount.scala`。
+运行一个程序会在 IDE 的 JVM 进程里启动一个本地的 Flink 实例。你将会在标准输出中看到 Flink 的日志消息和程序输出。
+
 
 4. **Explore the web dashboard:** The local Flink instance starts a webserver that serves Flink's
 dashboard. Open [http://localhost:8081](http://localhost:8081) to access and explore the dashboard.
+**查看web仪表盘：** 本地Flink实例会启动一个Flink 仪表盘 web服务器，打开[http://localhost:8081](http://localhost:8081)来查看。
 
-### Demo applications
+### Demo applications 示例程序
 
-#### Taxi event stream
+#### Taxi event stream 的士事件流
 
 All demo applications in this repository process a stream of taxi ride events that
 originate from a [public data set](http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml)
@@ -45,19 +52,21 @@ of the [New York City Taxi and Limousine Commission](http://www.nyc.gov/html/tlc
 
 We took some of this data and converted it into a data set of taxi ride events by splitting each
 trip record into a ride start and a ride end event. The events have the following schema:
+我们取了部分数据，把每个打车记录转换成 开始事件和结束事件，这些事件使用如下的数据定义：
 
 ```
 rideId: Long // unique id for each ride
 time: DateTime // timestamp of the start/end event
 isStart: Boolean // true = ride start, false = ride end
-location: GeoPoint // lon/lat of pick-up/drop-off location
-passengerCnt: short // number of passengers
-travelDist: float // total travel distance, -1 on start events
+location: GeoPoint // lon/lat of pick-up/drop-off location  上车和下车的经纬度
+passengerCnt: short // number of passengers  乘客数量
+travelDist: float // total travel distance, -1 on start events 总里程，如果是开始事件，则为 -1
 ```
 
 A custom `SourceFunction` serves a `DataStream[TaxiRide]` from this data set.
 In order to generate the stream as realistically as possible, events are emitted according to their
 timestamp. Two events that occurred ten minutes after each other in reality are served ten minutes apart.
+为了让数据流尽可能接近真实情况，事件通过他们的时间戳顺序发出。
 A speed-up factor can be specified to "fast-forward" the stream, i.e., with a speed-up factor of 2,
 the events would be served five minutes apart. Moreover, you can specify a maximum serving delay
 which causes each event to be randomly delayed within the bound to simulate an out-of-order stream
@@ -65,20 +74,23 @@ which causes each event to be randomly delayed within the bound to simulate an o
 This guarantees consistent results even in case of historic data or data which is delivered out-of-order.
 
 #### Identify popular locations
+#### 计算繁华地
 
 The [`TotalArrivalCount.scala`](/src/main/scala/com/dataartisans/flink_demo/examples/TotalArrivalCount.scala)
 program identifies popular locations in New York City.
 It ingests the stream of taxi ride events and counts for each location the number of persons that
 arrive by taxi.
+这个文件 [`TotalArrivalCount.scala`](/src/main/scala/com/dataartisans/flink_demo/examples/TotalArrivalCount.scala)用于计算纽约市那些地方比较繁华。它从 taxi ride events 数据流读取数据，并计算每个地方通过 taxi 到达的人数。
 
 #### Identify the popular locations of the last 15 minutes
+#### 计算过去15分钟内下客最多的位置
 
 The [`SlidingArrivalCount.scala`](/src/main/scala/com/dataartisans/flink_demo/examples/SlidingArrivalCount.scala)
 program identifies popular locations of the last 15 minutes.
 It ingests the stream of taxi ride records and computes every five minutes the number of
 persons that arrived at each location within the last 15 minutes.
 This type of computation is known as sliding window.
-
+这个文件[`SlidingArrivalCount.scala`](/src/main/scala/com/dataartisans/flink_demo/examples/SlidingArrivalCount.scala)计算过去15分钟下客最多的位置。 它获取 taxi ride 记录流，然后每5分钟计算过去15分钟每个地址下客的数量。这种计算方式就是 Sliding window 滑动窗口
 
 #### Compute early arrival counts for popular locations
 
